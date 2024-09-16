@@ -18,8 +18,10 @@ namespace App
 
         public static RomanNamber Parse(string value)
         {
+            CheckZeroDigit(value);
+
             int res = 0;
-            int prevDigit = 0;
+            int rightDigit = 0;
             int pos = value.Length;
             int maxDigit = 0;
             int lessCounter = 0;
@@ -28,6 +30,9 @@ namespace App
             {
                 pos--;
                 int digit;
+
+
+                //ДЗ
                 try
                 {
                     digit = DigitValue(c);
@@ -38,21 +43,16 @@ namespace App
                         $"{nameof(RomanNamber)}.{nameof(Parse)}() " +
                         $"found illegal symbol '{c}' in position {pos}");
                 }
-                //"відстань" між цифрами
-                if (digit != 0 && prevDigit / digit > 10)  //цифра занадто "далекі" для віднімання
-                {
-                    throw new FormatException(
-                        $"{nameof(RomanNamber)}.{nameof(Parse)}() " +
-                        $"illegal sequence: '{c}' befor '{value[pos + 1]}' in position {pos}");
-                }
-                // віднімання цифр, що є "5"-ками
-                if(digit < prevDigit && (digit == 5 || digit == 50 || digit == 500))
-                {
-                    throw new FormatException(
-                        $"{nameof(RomanNamber)}.{nameof(Parse)}() " +
-                        $"illegal sequence: '{c}' befor '{value[pos + 1]}' in position {pos}");
+                //
 
-                }
+                //"відстань" між цифрами
+                //if (!CheckDigitRatio (digit, rightDigit))  
+                //{
+                //    throw new FormatException(
+                //        $"{nameof(RomanNamber)}.{nameof(Parse)}() " +
+                //        $"illegal sequence: '{c}' befor '{value[pos + 1]}' in position {pos}");
+                //}
+                // віднімання цифр, що є "5"-ками
 
                 // рахуємо цифри, якщо вони менші за максимальну
                 if (digit > maxDigit)
@@ -73,32 +73,64 @@ namespace App
 
                 if (lessCounter > 1 || lessCounter > 0 && maxCounter > 1)
                 {
-                    throw new FormatException(value);
+                    throw new FormatException($"{nameof(RomanNamber)}.{nameof(Parse)}('{value}') " +
+                        $"illegal sequence: more than one smaller digits " +
+                        $"befor '{value[pos + 2]}' in position {pos + 2}");
                 }
 
-                if (digit == 0 && value.Length > 1)
-                {
-                    throw new FormatException();
-                }
-
-                res += digit < prevDigit ? -digit : digit;
-                prevDigit = digit;
+                res += digit < rightDigit ? -digit : digit;
+                rightDigit = digit;
             }
 
             return new(res);
         }
 
-        public static int DigitValue(char digit)
+        public static void CheckZeroDigit(String input)
         {
-            if (!"NIVXLCDM".Contains(digit))
+            if (input.Contains('N') && input.Length > 1)
             {
-                throw new ArgumentException($"The argument " +
-                    $"'{digit}' is not valid Roman digit.", 
-                    nameof(digit));
+                throw new FormatException();
             }
 
-            return digit switch
+        }
+
+        //цифра занадто "далекі" для віднімання
+        public static void CheckDigitRatio(String input)
+        {
+            for(int i = 0; i < input.Length -1; ++i)
             {
+                int leftDigit = DigitValue(input[i]);
+                int rightDigit = DigitValue(input[i + 1]);
+                if(! (leftDigit >= rightDigit || !(
+                leftDigit != 0 && rightDigit / leftDigit > 10 ||
+                leftDigit == 5 || leftDigit == 50 || leftDigit == 500
+                )))
+                {
+                    throw new FormatException(
+                        $"{nameof(RomanNamber)}.{nameof(Parse)}() " +
+                        $"illegal sequence: '{input[i]}' befor '{input[i + 1]}' in position {i}");
+                }
+            }
+        }
+        private static int ParseDigit(char c, int pos, string Value)
+        {
+            int digit;
+            try
+            {
+                digit = DigitValue(c);
+            }
+            catch (ArgumentException)
+            {
+                throw new FormatException(
+                    $"{nameof(RomanNamber)}.{nameof(Parse)}()" +
+                    $" found illegal symbol '{c}' in position {pos}");
+            }
+
+            return digit;
+        }
+
+        public static int DigitValue(char digit) => digit switch
+        {
                 'N' => 0,
                 'I' => 1,
                 'V' => 5,
@@ -108,10 +140,8 @@ namespace App
                 'D' => 500,
                 'M' => 1000,
                 _ => throw new ArgumentException(
-                    $"RomanNumber.DigitValue() illegal digit: '{digit}'"),
+                    $"RomanNumber.DigitValue() illegal argument digit: '{digit}' not valid Roman digit"),
             };
         }
     }
-
-}
 
