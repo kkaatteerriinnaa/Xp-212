@@ -6,93 +6,122 @@ using System.Threading.Tasks;
 
 namespace App
 {
-    internal class RomanNumberValidator
+    public class RomanNumberValidator
     {
-        public static void Validate(string value)
+        public static void Validate(String Value)
         {
-            CheckSymbols(value);
-            CheckZeroDigit(value);
-            CheckDigitRatio(value);
-            CheckSequence(value);
-        }
+            CheckZeroDigit(Value);
 
-        public static void CheckSequence(String input)
-        {
-            int maxDigit = 0; // найбільша цифра, що зустрічається
-            int lessCounter = 0; // кількість цифр, менших за ней
-            int maxCounter = 1; // кількість однакових найбільших цифр
-            int pos = input.Length;
-
-            for (int i = input.Length - 1; i >= 0; --i)
+            int result = 0;
+            int rightDigit = 0;      // TODO: rename, 'prev' not semantics
+            int pos = Value.Length;
+            int maxDigit = 0;       // найбільша цифра, що пройдена
+            int lessCounter = 0;    // кількість цифр, менших за неї
+            int maxCounter = 1;     // кількість однакових найбільших цифр
+            foreach (char c in Value.Reverse())
             {
-                int digit = RomanNamberParse.DigitValue(input[i]);
-                if (digit > maxDigit)
+                pos--;
+                int digit = ParseDigit(c, pos, Value);
+                ValidateDigitRatio(digit, rightDigit, c, Value, pos);
+                UpdateMaxAndLessCounters(digit, ref maxDigit, ref lessCounter, ref maxCounter);
+                if (IsInvalidLessCounter(lessCounter, maxCounter))
                 {
-                    maxDigit = digit;
-                    lessCounter = 0;
-                    maxCounter = 1;
-                }
-                else if (digit == maxDigit)
-                {
-                    lessCounter = 0;
-                    maxCounter += 1;
-                }
-                else
-                {
-                    lessCounter += 1;
-                }
-                if (lessCounter > 1 || lessCounter > 0 && maxCounter > 1)
                     throw new FormatException(
-                        $"{nameof(RomanNamber)}.Parse.('{input}') " +
-                        $"illegal sequence: more than one smaller digits " +
-                        $"before '{input[i + 2]}' in position {i + 2}");
-
+                        $"{nameof(RomanNumber)}.Parse('{Value}') error: " +
+                        $"illegal sequence: more than one smaller digits before '{Value[Value.Length - 1]}' in position {Value.Length - 1}");
+                }
+                result += digit < rightDigit ? -digit : digit;
+                rightDigit = digit;
             }
         }
-
-        public static void CheckZeroDigit(String input)
+        private static void CheckZeroDigit(String input)
         {
             if (input.Contains('N') && input.Length > 1)
             {
                 throw new FormatException();
             }
-
         }
-
-        //цифра занадто "далекі" для віднімання
-        public static void CheckDigitRatio(String input)
+        private static void CheckDigitRatios(String input)
         {
-            for (int i = 0; i < input.Length - 1; ++i)
+            for (int i = 0; i < input.Length - 1; i++)
             {
-                int leftDigit = RomanNamberParse.DigitValue(input[i]);
-                int rightDigit = RomanNamberParse.DigitValue(input[i + 1]);
-                if (!(leftDigit >= rightDigit || !(
-                leftDigit != 0 && rightDigit / leftDigit > 10 ||
-                leftDigit == 5 || leftDigit == 50 || leftDigit == 500
-                )))
+                int leftDigit = DigitValue(input[i]);
+                int rightDigit = DigitValue(input[i + 1]);
+                if (leftDigit >= rightDigit || !(
+                   rightDigit != 0 && leftDigit != 0 && rightDigit / leftDigit > 10 ||
+                   leftDigit == 5 || leftDigit == 50 || leftDigit == 500))
                 {
                     throw new FormatException(
-                        $"{nameof(RomanNamber)}.Parse() " +
-                        $"illegal sequence: '{input[i]}' before '{input[i + 1]}' in position {i}");
+                    $"{nameof(RomanNumber)}.Parse() " +
+                    $"illegal sequence: '{input[i]}' before '{input[i + 1]}' in position {i}");
                 }
             }
         }
-        private static void CheckSymbols(String input)
+        private static bool CheckDigitRatio(int leftDigit, int rightDigit)
         {
-            for (int i = 0; i < input.Length; ++i)
-            {
-                try
-                {
-                    RomanNamberParse.DigitValue(input[i]);
-                }
-                catch
-                {
-                    throw new FormatException(
-                    $"{nameof(RomanNamber)}.Parse()" +
-                    $" found illegal symbol '{input[i]}' in position {i}");
-                }
-            }
+            //цифри занадто "далекі" для віднімання && віднімання цифр, що є "5"-ками
+            return leftDigit >= rightDigit || !(
+                   rightDigit != 0 && leftDigit != 0 && rightDigit / leftDigit > 10 ||
+                   leftDigit == 5 || leftDigit == 50 || leftDigit == 500
+                );
         }
 
+        private static int ParseDigit(char c, int pos, string Value)
+        {
+            int digit;
+            try
+            {
+                digit = DigitValue(c);
+            }
+            catch (ArgumentException)
+            {
+                throw new FormatException($"RomanNumber.Parse('{Value}') error: illegal symbol '{c}' in position {pos}");
+            }
+
+            return digit;
+        }
+        private static bool IsInvalidLessCounter(int lessCounter, int maxCounter)
+        {
+            return lessCounter > 1 || (lessCounter > 0 && maxCounter > 1);
+        }
+        private static void UpdateMaxAndLessCounters(int digit, ref int maxDigit, ref int lessCounter, ref int maxCounter)
+        {
+            if (digit > maxDigit)
+            {
+                maxDigit = digit;
+                lessCounter = 0;
+                maxCounter = 1;
+            }
+            else if (digit == maxDigit)
+            {
+                maxCounter += 1;
+                lessCounter = 0;
+            }
+            else
+            {
+                lessCounter += 1;
+            }
+        }
+        private static void ValidateDigitRatio(int digit, int rightDigit, char c, string Value, int pos)
+        {
+            if (!CheckDigitRatio(digit, rightDigit))
+            {
+                throw new FormatException(
+                    $"{nameof(RomanNumber)}.Parse('{Value}') error: " +
+                    $"illegal sequence: '{c}' before '{Value[pos + 1]}' in position {pos}");
+            }
+        }
+        public static int DigitValue(char digit) => digit switch
+        {
+            'N' => 0,
+            'I' => 1,
+            'V' => 5,
+            'X' => 10,
+            'L' => 50,
+            'C' => 100,
+            'D' => 500,
+            'M' => 1000,
+            _ => throw new ArgumentException($"{nameof(RomanNumber)}.{nameof(DigitValue)}() ('{digit}')"),
+        };
     }
 }

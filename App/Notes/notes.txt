@@ -28,3 +28,9 @@
 - управління часом
 - управління якістю (QA) / управління ризиками
 - управління знаннями (повторюваність проєкту)
+
+
+ Assert.AreEqual failed. Expected:<
+ RomanNamber.Parse('IIX') error: illegal sequence: more than one smaller digits before 'X' in position 2>. Actual:<
+ RomanNamber.Parse('IIX') error: illegal sequence: more than one smaller digits before 'X' in position 2 >. ex.Message must be '
+ RomanNamber.Parse('IIX') error: illegal sequence: more than one smaller digits before 'X' in position 2'; ex.Message: RomanNamber.Parse('IIX') error: illegal sequence: more than one smaller digits before 'X' in position 2 

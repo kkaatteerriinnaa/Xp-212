@@ -6,22 +6,19 @@ using System.Threading.Tasks;
 
 namespace App
 {
-    public class RomanNamberParse
+    public class RomanNumberParser
     {
-        public static RomanNamber FormString(string value)
+        public static RomanNumber FromString(String Value)
         {
-            RomanNumberValidator.Validate(value);
+            RomanNumberValidator.Validate(Value);
             int res = 0;
             int rightDigit = 0;
-
-            foreach (char c in value.Reverse())
+            foreach (char c in Value.Reverse())
             {
                 int digit = DigitValue(c);
-
                 res += digit < rightDigit ? -digit : digit;
                 rightDigit = digit;
             }
-
             return new(res);
         }
         public static int DigitValue(char digit) => digit switch
@@ -34,8 +31,8 @@ namespace App
             'C' => 100,
             'D' => 500,
             'M' => 1000,
-            _ => throw new ArgumentException(
-                $"RomanNumber.DigitValue() illegal argument digit: '{digit}' not valid Roman digit"),
+            _ => throw new ArgumentException($"{nameof(RomanNumber)}.{nameof(DigitValue)}() ('{digit}')"),
         };
+
     }
 }
