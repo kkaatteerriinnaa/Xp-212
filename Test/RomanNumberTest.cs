@@ -18,6 +18,28 @@ namespace Tests
         };
 
         [TestMethod]
+        public void PlusTest()
+        {
+            RomanNumber rn1 = new(1),rn2 = new(2);
+            Assert.IsInstanceOfType<RomanNumber>(
+                rn1.Plus(rn2)
+            );
+            Assert.AreNotSame( rn1, rn1.Plus(rn2)); 
+            Assert.AreNotSame( rn2, rn1.Plus(rn2));
+
+            for (var i = 0; i < 100; i++)
+            {
+                Assert.AreEqual(
+                    i + rn1.Value,
+                    rn1.Plus(new(i)).Value,
+                    $"1 + {i} --> {1 + i}"
+                );
+            }
+            Assert.ThrowsException<ArgumentNullException>(() => rn1.Plus(null!));
+
+    }
+
+    [TestMethod]
         public void TestToShort()
         {
             RomanNumber rn = new(123);

@@ -11,6 +11,12 @@ namespace App
         public static RomanNumber Parse(String input) =>
             RomanNumberParser.FromString(input);
 
+        public RomanNumber Plus(RomanNumber other) => 
+            other == null
+            ? throw new ArgumentNullException(nameof(other)) 
+            : this with { Value = Value + other.Value };
+
+
         public static explicit operator short(RomanNumber rn) => (short)rn.Value;
         public static explicit operator byte(RomanNumber rn) => (byte)rn.Value;
         public static explicit operator long(RomanNumber rn) => (long)rn.Value;
